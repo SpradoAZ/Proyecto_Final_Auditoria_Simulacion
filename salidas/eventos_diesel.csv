@@ -1,0 +1,5 @@
+minuto,hora_reloj,etapa,potencia_solar_w,consumo_planta_w,potencia_neta_w,soc_pct,diesel_wh,combustible_l,deficit_sobre_limite_w,diesel_esperado_wh
+976,16:16,Ósmosis inversa,19062.19,28444.5,-9382.31,96.804,46.08,0.01382,1382.2,46.07
+982,16:22,Ósmosis inversa,19325.57,28444.5,-9118.93,95.427,37.29,0.01119,1118.8,37.29
+984,16:24,Ósmosis inversa,19379.53,28444.5,-9064.97,94.871,35.5,0.01065,1064.9,35.5
+990,16:30,Ósmosis inversa,19447.07,28444.5,-8997.43,93.422,33.25,0.00998,997.3,33.24

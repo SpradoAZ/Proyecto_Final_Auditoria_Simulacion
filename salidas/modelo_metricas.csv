@@ -1,0 +1,6 @@
+modelo,version,validacion,MAE_W,RMSE_W,R2,coef_radiacion,coef_temperatura,intercepto
+Línea base (promedio),Sin variables,Aleatoria 70/30,13051.8113,15014.2929,-0.0014,,,
+Regresión lineal,A) Radiación del mismo minuto,Aleatoria 70/30,1675.8078,2157.4982,0.9793,30.5537,1853.3729,-44186.6971
+Regresión lineal,A) Radiación del mismo minuto,Temporal (mañana → tarde),1831.7687,2404.9199,0.9759,,,
+Regresión lineal,B) Radiación alineada (minuto anterior),Aleatoria 70/30,233.0211,268.4145,0.9997,61.744,-113.565,3545.526
+Regresión lineal,B) Radiación alineada (minuto anterior),Temporal (mañana → tarde),234.5752,274.8235,0.9997,,,

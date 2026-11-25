@@ -1,0 +1,8 @@
+{
+  "registros_sol": 716,
+  "entrenamiento": 501,
+  "prueba": 215,
+  "coef_radiacion_w_por_w_m2": 61.74,
+  "coef_temperatura_w_por_c": -113.57,
+  "intercepto_w": 3545.5
+}

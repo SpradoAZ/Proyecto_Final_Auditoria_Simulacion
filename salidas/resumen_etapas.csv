@@ -1,0 +1,5 @@
+etapa,minutos,consumo_kwh,solar_kwh,excedente_kwh,diesel_wh,agua_m3,horas
+Parada,1138,0.0,38.908,35.75,0.0,0.0,18.97
+Pretratamiento,360,18.963,174.533,155.675,0.0,0.15,6.0
+Pretratamiento + ósmosis,2,1.054,1.499,1.394,0.0,0.15,0.03
+Ósmosis inversa,300,142.222,180.086,41.173,152.12,44.852,5.0

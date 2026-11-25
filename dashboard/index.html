@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Auditoría planta desalinizadora</title>
+<link rel="icon" href="data:,">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* VOICE: tablero técnico de revisión, sobrio y preciso, como la sala de control de una planta.
+   IDEA: el panel de operación de una planta desalinizadora: mar, sol y un testigo rojo para el diésel.
+   PICTURE: la curva de potencia solar frente al consumo, con las etapas de la planta como franjas.
+   COLOUR and TYPE: mar profundo dominante, blanco de sal como soporte, sol dorado y rojo diésel de acento; Barlow Semi Condensed + Inter.
+   LAYOUT: banda de mar con el hallazgo y los controles, indicadores, gráfico principal ancho y secciones en columnas. */
+:root{color-scheme:light dark;
+--bg:light-dark(#f4f8f9,#081a21);--card:light-dark(#ffffff,#0f2a33);--ink:light-dark(#0c2731,#e4eff2);--mute:light-dark(#557079,#93aeb6);
+--line:light-dark(#d9e5e8,#1f414c);--sea:#0d5a6e;--sea2:light-dark(#0d5a6e,#0b4a5b);--sun:#e6a10f;--cons:light-dark(#163f6b,#7fb2e5);
+--diesel:#d4442e;--agua:#16998a;--salm:light-dark(#8a6d5c,#c4a594);--bat:light-dark(#5257c4,#9ea2f5);
+--pre:light-dark(#f6e7c4,#3b3420);--osm:light-dark(#d3e8f3,#16364a);--mix:light-dark(#e7d9f0,#33284a)}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 Inter,system-ui,sans-serif;overflow-x:clip}
+h1,h2,h3,.num{font-family:"Barlow Semi Condensed",Inter,sans-serif;font-weight:600;line-height:1.08}
+h1{font-size:clamp(30px,4.4vw,48px);margin:.2em 0 .35em;text-wrap:balance;max-width:24ch}
+h2{font-size:28px;margin:0 0 .3em}h3{font-size:20px;margin:0 0 .4em}
+p{margin:.4em 0}.mute{color:var(--mute)}.small{font-size:13px}
+.band{padding:clamp(24px,3.5vw,52px) max(5vw,16px)}.wrap{max-width:1240px;margin:0 auto}
+header.band{background:var(--sea2);color:#eef7f9}header .mute{color:#b5d4db}
+.lead{max-width:68ch;font-size:17px}
+.prob{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:18px;margin-top:20px}
+.prob div{border-top:1px solid #ffffff40;padding-top:10px;font-size:15px}.prob b{display:block;color:#fff;font-weight:600}
+nav.scroll{display:flex;gap:6px;flex-wrap:nowrap;padding:10px max(5vw,16px);background:var(--card);border-bottom:1px solid var(--line)}
+nav a{color:var(--ink);text-decoration:none;padding:8px 12px;border-radius:8px;font-size:14px;white-space:nowrap}nav a:hover{background:var(--bg)}
+@media(min-width:900px){nav.scroll{position:sticky;top:0;z-index:5}}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px}
+.ctrl{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr) minmax(0,1fr);gap:22px;align-items:start}
+.ctrl label.t{display:block;font-size:13px;color:var(--mute);margin-bottom:6px}
+.seg{display:flex;flex-wrap:wrap;gap:6px}
+button,.chip{font:inherit;font-size:14px;min-height:40px;padding:6px 12px;border-radius:9px;border:1px solid var(--line);background:var(--bg);color:var(--ink);cursor:pointer}
+button[aria-pressed=true],.chip.on{background:var(--sea);border-color:var(--sea);color:#fff}
+button:focus-visible,input:focus-visible,a:focus-visible{outline:3px solid var(--sun);outline-offset:2px}
+.rng{display:grid;grid-template-columns:3.5em minmax(0,1fr) 7em;gap:8px;align-items:center;font-size:14px}
+.rng input{width:100%;accent-color:var(--sea);height:32px}.rng output{text-align:right;font-variant-numeric:tabular-nums}
+.chk{display:flex;flex-wrap:wrap;gap:8px}.chk label{display:flex;gap:6px;align-items:center;font-size:14px;min-height:36px;padding:0 10px;border-radius:9px;border:1px solid var(--line);cursor:pointer}
+.chk input{width:18px;height:18px;accent-color:var(--sea)}
+.sw{width:12px;height:12px;border-radius:3px;display:inline-block}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,150px),1fr));gap:12px;margin-top:16px}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px}
+.kpi .l{font-size:13px;color:var(--mute)}.kpi .num{font-size:clamp(28px,3vw,36px);margin:2px 0;white-space:nowrap;font-variant-numeric:tabular-nums}
+.kpi .num small{font-size:16px;font-weight:500;margin-left:3px}.kpi .s{font-size:13px;color:var(--mute)}
+.kpi.alerta .num{color:var(--diesel)}
+.scope{font-size:13px;color:var(--mute);margin-top:10px}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,440px),1fr));gap:16px;margin-top:16px}
+.fig{position:relative;min-height:340px}.fig>svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible;touch-action:pan-y}
+.fig.sm{min-height:260px}
+.tip{position:absolute;pointer-events:none;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:8px 10px;font-size:13px;box-shadow:0 6px 20px #0003;z-index:3;min-width:170px}
+.tip b{font-weight:600}.tip div{display:flex;justify-content:space-between;gap:12px;white-space:nowrap}
+.leg{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:13px;color:var(--mute);margin:4px 0 8px}.leg span{display:inline-flex;gap:6px;align-items:center}
+.ln{width:18px;height:3px;border-radius:2px;display:inline-block}
+svg text{fill:var(--mute);font:12px Inter,sans-serif}svg .ax{stroke:var(--line)}
+.dest{display:flex;height:54px;border-radius:10px;overflow:hidden;margin:10px 0}.dest div{height:100%}
+.rows{display:grid;gap:8px;font-size:14px}.rows .r{display:flex;flex-wrap:wrap;justify-content:space-between;gap:2px 12px;border-bottom:1px solid var(--line);padding-bottom:6px}
+.rows .v{font-variant-numeric:tabular-nums;white-space:nowrap;text-align:right}
+.bar{height:10px;border-radius:5px;background:var(--bg);overflow:hidden;margin-top:4px}.bar i{display:block;height:100%}
+.hall{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,270px),1fr));gap:14px}
+.hall .panel p{font-size:15px}.tag{font-size:12px;font-weight:600;color:var(--sea);display:block;margin-top:10px}
+:root[data-theme=dark] .tag{color:#7fd0dc}@media(prefers-color-scheme:dark){:root:not([data-theme=light]) .tag{color:#7fd0dc}}
+table{width:100%;border-collapse:collapse;font-size:14px}th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-weight:600;font-size:13px;color:var(--mute)}td.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.st{font-size:12px;font-weight:600;padding:2px 8px;border-radius:20px;white-space:nowrap}
+.st.OK{background:#16998a22;color:var(--agua)}.st.Corregido{background:#163f6b22;color:var(--cons)}.st.Advertencia{background:#e6a10f2e;color:light-dark(#8a5d00,#f0c35a)}
+pre,.scroll{overflow-x:auto}.scroll a{flex:none}code{overflow-wrap:anywhere}html{scroll-padding-top:72px}
+footer{font-size:14px}footer li{margin:.3em 0}
+@media(max-width:860px){.ctrl{grid-template-columns:minmax(0,1fr)}}
+@media(max-width:600px){.kpi{padding:12px}.kpi .num{font-size:26px}.kpis{gap:8px}}
+@media(max-width:600px){table{font-size:13px}.stack thead{display:none}.stack tr{display:grid;padding-block:10px}.stack td{display:flow-root;border:0;padding:3px 0;padding-inline-start:8em;text-align:start}.stack td::before{content:attr(data-l);float:inline-start;width:7.5em;margin-inline-start:-8em;white-space:normal;color:var(--mute)}.stack td:empty{display:none}.fig{min-height:280px}}
+@media(prefers-reduced-motion:no-preference){.kpi .num{transition:color .3s}}
+</style><script>new MutationObserver(()=>{for(const c of document.querySelectorAll('.stack td:not([data-l])')){let i=0,p=c;while(p=p.previousElementSibling)i+=p.colSpan;c.dataset.l=c.closest('table').rows[0].cells[i]?.textContent||''}}).observe(document,{childList:true,subtree:true})</script>
+</head>
+<body>
+<header class="band"><div class="wrap">
+  <p class="mute small">Proyecto final · Electiva III, Introducción a la Ciencia de Datos · Auditoría de datos de simulación</p>
+  <h1>La planta cubre casi todo su consumo con sol, pero deja sin usar el 59 % de la energía que genera</h1>
+  <p class="lead">Revisión de calidad y análisis de 1.800 registros por minuto de una simulación de 30 horas de una planta desalinizadora alimentada con paneles solares, batería de 48 kWh y un generador diésel de respaldo.</p>
+  <div class="prob">
+    <div><b>Problema</b>Los resultados llegan en un Excel de 4 hojas y 18 variables. A mano no se puede saber si los datos son consistentes ni cómo se comporta la planta.</div>
+    <div><b>Pregunta</b>¿Qué tan confiables son los datos y qué dicen sobre el uso de la energía solar, el diésel y la producción de agua?</div>
+    <div><b>Objetivo</b>Auditar y depurar los datos, calcular indicadores y presentarlos en un tablero interactivo con filtros.</div>
+  </div>
+</div></header>
+
+<nav class="scroll" aria-label="Secciones">
+  <a href="#indicadores">Indicadores</a><a href="#energia">Energía</a><a href="#bateria">Batería y diésel</a><a href="#agua">Agua y residuos</a><a href="#hallazgos">Hallazgos</a><a href="#calidad">Calidad de datos</a><a href="#modelo">Modelo predictivo</a><a href="#metodo">Metodología</a>
+</nav>
+
+<main>
+<section class="band" id="indicadores" style="padding-bottom:12px"><div class="wrap">
+  <div class="panel ctrl">
+    <div>
+      <label class="t">Periodo analizado (horas de simulación; hora 0 = 00:00 del día 1)</label>
+      <div class="rng"><span>Desde</span><input type="range" id="desde" min="0" max="29.5" step="0.25" value="0"><output id="o-desde"></output></div>
+      <div class="rng"><span>Hasta</span><input type="range" id="hasta" min="0.5" max="30" step="0.25" value="30"><output id="o-hasta"></output></div>
+      <div class="seg" id="presets" style="margin-top:8px"></div>
+    </div>
+    <div>
+      <label class="t">Resolución de los gráficos (promedio por intervalo)</label>
+      <div class="seg" id="res"></div>
+      <label class="t" style="margin-top:14px">Serie adicional</label>
+      <div class="chk"><label><input type="checkbox" id="neta"> Potencia neta</label></div>
+    </div>
+    <div>
+      <label class="t">Etapas de la planta (filtran los indicadores y resaltan sus franjas)</label>
+      <div class="chk" id="etapas"></div>
+      <button id="reset" style="margin-top:12px">Restablecer filtros</button>
+    </div>
+  </div>
+  <div class="kpis" id="kpis"></div>
+  <p class="scope" id="scope"></p>
+</div></section>
+
+<section class="band" id="energia" style="padding-top:12px"><div class="wrap">
+  <div class="panel">
+    <h2>Potencia solar frente a consumo de la planta</h2>
+    <p class="mute small">kW. Las franjas marcan la etapa en operación; los puntos rojos, los minutos con aporte diésel. Pasa el cursor para ver los valores.</p>
+    <div class="leg"><span><i class="ln" style="background:var(--sun)"></i>Potencia solar</span><span><i class="ln" style="background:var(--cons)"></i>Consumo de la planta</span><span id="leg-neta" hidden><i class="ln" style="background:var(--mute)"></i>Potencia neta</span><span><i class="sw" style="background:var(--diesel);border-radius:50%"></i>Aporte diésel</span><span><i class="sw" style="background:var(--pre)"></i>Pretratamiento</span><span><i class="sw" style="background:var(--osm)"></i>Ósmosis inversa</span></div>
+    <div class="fig" id="f-pot"><svg role="img" aria-label="Potencia solar y consumo en el tiempo"></svg><div class="tip" hidden></div></div>
+  </div>
+  <div class="grid2">
+    <div class="panel">
+      <h3>Destino de la energía solar del periodo</h3>
+      <div class="dest" id="dest"></div>
+      <div class="rows" id="dest-rows"></div>
+    </div>
+    <div class="panel">
+      <h3>Consumo y excedente por etapa</h3>
+      <div class="rows" id="etapa-rows"></div>
+      <p class="mute small" style="margin-top:10px">Clima del periodo: <span id="clima"></span></p>
+    </div>
+  </div>
+</div></section>
+
+<section class="band" id="bateria" style="padding-top:0"><div class="wrap grid2" style="margin-top:0">
+  <div class="panel">
+    <h2>Estado de carga de la batería</h2>
+    <p class="mute small">%. Capacidad 48 kWh. Puntos rojos: aporte diésel.</p>
+    <div class="fig sm" id="f-soc"><svg role="img" aria-label="Estado de carga de la batería"></svg><div class="tip" hidden></div></div>
+  </div>
+  <div class="panel">
+    <h2>¿Por qué entra el diésel?</h2>
+    <p class="small">Según los datos, la batería entrega como máximo <b>8,0 kW</b> y se carga como máximo a <b>9,6 kW</b>. Cuando la ósmosis pide 28,4 kW y el sol cae por debajo de unos 20 kW, el déficit supera ese límite y el diésel cubre la diferencia, aunque la batería siga casi llena.</p>
+    <table class="stack" id="t-diesel"><thead><tr><th>Hora</th><th>Estado de carga</th><th>Déficit sobre 8 kW</th><th>Diésel</th></tr></thead><tbody></tbody></table>
+  </div>
+</div></section>
+
+<section class="band" id="agua" style="padding-top:0"><div class="wrap grid2" style="margin-top:0">
+  <div class="panel">
+    <h2>Producción acumulada en el periodo</h2>
+    <div class="leg"><span><i class="ln" style="background:var(--agua)"></i>Agua desalinizada</span><span><i class="ln" style="background:var(--salm)"></i>Salmuera</span></div>
+    <div class="fig sm" id="f-agua"><svg role="img" aria-label="Agua y salmuera acumuladas"></svg><div class="tip" hidden></div></div>
+  </div>
+  <div class="panel">
+    <h2>Residuos del pretratamiento</h2>
+    <p class="mute small">Paquetes de 10 kg generados en el periodo seleccionado.</p>
+    <div class="rows" id="lodos"></div>
+  </div>
+</div></section>
+
+<section class="band" id="hallazgos" style="padding-top:0"><div class="wrap">
+  <h2>Hallazgos</h2>
+  <p class="mute small" style="margin-bottom:14px">Cada hallazgo separa lo que muestran los datos de su lectura. Son datos de una sola simulación: describen asociaciones y no prueban causas.</p>
+  <div class="hall" id="hall"></div>
+</div></section>
+
+<section class="band" id="calidad" style="padding-top:0"><div class="wrap">
+  <div class="panel">
+    <h2>Calidad de datos: <span id="aud-res"></span></h2>
+    <p class="mute small">Verificaciones automáticas del script <code>01_auditoria_limpieza.py</code> sobre la hoja de minutos y su coherencia con las hojas de 5, 10 y 60 minutos.</p>
+    <div class="seg" id="aud-f" style="margin:10px 0"></div>
+    <div class="scroll"><table class="stack" id="t-aud"><thead><tr><th>Id</th><th>Categoría</th><th>Verificación</th><th>Resultado</th><th>Registros</th><th>Decisión tomada</th></tr></thead><tbody></tbody></table></div>
+  </div>
+</div></section>
+
+<section class="band" id="modelo" style="padding-top:0"><div class="wrap grid2" style="margin-top:0">
+  <div class="panel">
+    <h2>Modelo predictivo: potencia solar</h2>
+    <p class="small">Regresión lineal que predice la potencia de los paneles a partir de la radiación y la temperatura. 716 minutos de sol, 70 % para entrenar y 30 % para probar (semilla 42), más una prueba temporal: entrena con la mañana y evalúa con la tarde.</p>
+    <div class="seg" id="mod-v" style="margin:8px 0"></div>
+    <div class="fig sm" id="f-mod"><svg role="img" aria-label="Potencia real frente a predicha"></svg><div class="tip" hidden></div></div>
+    <p class="mute small">Eje horizontal: potencia real (kW). Eje vertical: potencia predicha (kW). La línea punteada es la predicción perfecta.</p>
+  </div>
+  <div class="panel">
+    <h3>Métricas en el conjunto de prueba</h3>
+    <div class="scroll"><table class="stack" id="t-mod"><thead><tr><th>Modelo</th><th>Validación</th><th>MAE</th><th>RMSE</th><th>R²</th></tr></thead><tbody></tbody></table></div>
+    <p class="small" style="margin-top:12px" id="mod-txt"></p>
+    <p class="small mute"><b>Limitaciones:</b> es una simulación, así que la relación entre radiación y potencia es casi exacta; no representa la variabilidad real de unos paneles (suciedad, nubes rápidas, fallas). Hay un solo día de sol. Las predicciones son estimaciones y no deben leerse como certezas.</p>
+  </div>
+</div></section>
+</main>
+
+<footer class="band" id="metodo" style="padding-top:0"><div class="wrap panel">
+  <h2>Metodología, fuente y supuestos</h2>
+  <ul>
+    <li><b>Fuente:</b> <span id="fuente"></span> Archivo original: <code>resultados_escenario_1.xlsx</code>. Datos sin información personal.</li>
+    <li><b>Proceso:</b> 1) auditoría y limpieza en Python (pandas); 2) análisis descriptivo; 3) modelo de regresión (scikit-learn); 4) exportación a este tablero (HTML + JavaScript, sin librerías externas: funciona sin conexión).</li>
+    <li><b>Supuestos:</b> el minuto 0 es las 00:00 (el sol sale a las 06:03 y se pone a las 18:00). La capacidad de la batería (48 kWh) y sus límites de potencia se infieren de los datos. Las etapas se deducen del nivel de consumo: 3,2 kW pretratamiento y 28,4 kW ósmosis inversa.</li>
+    <li><b>Cómo leer los gráficos:</b> la resolución de 5, 10 o 60 minutos promedia las potencias y suma las cantidades de cada intervalo. Los indicadores se calculan siempre con los datos por minuto.</li>
+  </ul>
+  <p class="mute small">Elaboración propia. Datos generados el <span id="gen"></span>.</p>
+</div></footer>
+
+<script src="datos.js"></script>
+<script>
+{
+const D = window.DATOS, S = D.serie, N = S.m.length, ET = D.meta.etapas;
+const COL = {pre: 'var(--pre)', osm: 'var(--osm)', mix: 'var(--mix)'};
+const ETCOL = [null, COL.pre, COL.osm, COL.mix];
+const $ = id => document.getElementById(id);
+const esc = v => String(v).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const f = (v, d = 1) => Number.isFinite(v) ? v.toLocaleString('es-CO', {minimumFractionDigits: d, maximumFractionDigits: d}) : '—';
+const reloj = m => { const t = ((m % 1440) + 1440) % 1440; return String(Math.floor(t / 60)).padStart(2, '0') + ':' + String(Math.round(t % 60)).padStart(2, '0'); };
+const horaTxt = h => h.toLocaleString('es-CO', {maximumFractionDigits: 2}) + ' h';
+
+const estado = {desde: 0, hasta: 30, res: 1, etapas: new Set([0, 1, 2, 3]), neta: false, mod: 'b', aud: 'Todos'};
+const PRESETS = [['Todo', 0, 30], ['Horas de sol', 6, 18], ['Ósmosis 1', 8, 10.5], ['Ósmosis 2', 14, 16.5], ['Aportes diésel', 16, 16.75]];
+const RES = [1, 5, 10, 60];
+
+/* ---------- Controles ---------- */
+$('presets').innerHTML = PRESETS.map((p, i) => `<button data-p="${i}">${p[0]}</button>`).join('');
+$('res').innerHTML = RES.map(r => `<button data-r="${r}">${r} min</button>`).join('');
+$('etapas').innerHTML = ET.map((e, i) => `<label><input type="checkbox" data-e="${i}" checked><i class="sw" style="background:${ETCOL[i] || 'var(--line)'}"></i>${esc(i === 3 ? 'Transición (ambas)' : e)}</label>`).join('');
+$('mod-v').innerHTML = [['a', 'A) Radiación del mismo minuto'], ['b', 'B) Radiación alineada']].map(([k, t]) => `<button data-v="${k}">${t}</button>`).join('');
+$('aud-f').innerHTML = ['Todos', 'Corregido', 'Advertencia', 'OK'].map(k => `<button data-a="${k}">${k}</button>`).join('');
+
+$('presets').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; const p = PRESETS[b.dataset.p]; estado.desde = p[1]; estado.hasta = p[2]; actualizar(); });
+$('res').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; estado.res = +b.dataset.r; actualizar(); });
+$('etapas').addEventListener('change', e => { const i = +e.target.dataset.e; e.target.checked ? estado.etapas.add(i) : estado.etapas.delete(i); actualizar(); });
+$('neta').addEventListener('change', e => { estado.neta = e.target.checked; actualizar(); });
+$('desde').addEventListener('input', e => { estado.desde = Math.min(+e.target.value, estado.hasta - 0.5); actualizar(); });
+$('hasta').addEventListener('input', e => { estado.hasta = Math.max(+e.target.value, estado.desde + 0.5); actualizar(); });
+$('reset').addEventListener('click', () => { Object.assign(estado, {desde: 0, hasta: 30, res: 1, neta: false}); estado.etapas = new Set([0, 1, 2, 3]); actualizar(); });
+$('mod-v').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; estado.mod = b.dataset.v; pintarModelo(); });
+$('aud-f').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; estado.aud = b.dataset.a; pintarAuditoria(); });
+
+/* ---------- Cálculos ---------- */
+function rango() { const a = Math.round(estado.desde * 60), b = Math.round(estado.hasta * 60); const idx = []; for (let i = 0; i < N; i++) if (S.m[i] > a && S.m[i] <= b) idx.push(i); return idx; }
+const suma = (idx, k) => idx.reduce((s, i) => s + S[k][i], 0);
+
+function indicadores(idx) {
+  const sel = idx.filter(i => estado.etapas.has(S.e[i]));
+  const solar = suma(sel, 'ps') / 60000, cons = suma(sel, 'co') / 60000, exc = suma(sel, 'ex') / 1000, die = suma(sel, 'di');
+  const agua = suma(sel, 'ag'), salm = suma(sel, 'sa');
+  let socMin = Infinity, socI = -1, pico = 0; let eventos = 0;
+  for (const i of sel) { if (S.so[i] < socMin) { socMin = S.so[i]; socI = i; } pico = Math.max(pico, S.ps[i]); if (S.di[i] > 0) eventos++; }
+  return {sel, solar, cons, exc, die, agua, salm, socMin, socI, pico, eventos, litros: suma(sel, 'cb'), lg: suma(sel, 'lg'), lf: suma(sel, 'lf'),
+    directa: sel.reduce((s, i) => s + Math.min(S.ps[i], S.co[i]), 0) / 60000,
+    carga: sel.reduce((s, i) => s + (i > 0 ? Math.max(S.eb[i] - S.eb[i - 1], 0) : 0), 0) / 1000,
+    oper: sel.filter(i => S.co[i] > 0).length / 60};
+}
+
+function agregar(idx) {
+  const r = estado.res, cubos = [];
+  let cur = null;
+  for (const i of idx) {
+    const k = Math.ceil(S.m[i] / r);
+    if (!cur || cur.k !== k) { cur = {k, n: 0, ps: 0, co: 0, pn: 0, so: 0, ra: 0, te: 0, ag: 0, sa: 0, di: 0, m: S.m[i], e: S.e[i]}; cubos.push(cur); }
+    cur.n++; cur.m = S.m[i]; cur.e = S.e[i];
+    for (const c of ['ps', 'co', 'pn', 'so', 'ra', 'te']) cur[c] += S[c][i];
+    for (const c of ['ag', 'sa', 'di']) cur[c] += S[c][i];
+  }
+  let ag = 0, sa = 0;
+  return cubos.map(c => { ag += c.ag; sa += c.sa; return {t: c.m / 60, m: c.m, ps: c.ps / c.n / 1000, co: c.co / c.n / 1000, pn: c.pn / c.n / 1000, so: c.so / c.n, ra: c.ra / c.n, te: c.te / c.n, agA: ag, saA: sa, di: c.di, e: c.e}; });
+}
+
+function franjas(idx) {
+  const out = []; let ini = null, e = null, prev = null;
+  for (const i of idx) { if (S.e[i] !== e) { if (e) out.push([ini, prev, e]); ini = (S.m[i] - 1) / 60; e = S.e[i]; } prev = S.m[i] / 60; }
+  if (e) out.push([ini, prev, e]);
+  return out;
+}
+
+/* ---------- Motor de gráficos SVG ---------- */
+function ticks(a, b, n) { const paso = Math.pow(10, Math.floor(Math.log10((b - a) / n))); const m = [1, 2, 2.5, 5, 10].find(x => (b - a) / (x * paso) <= n) * paso; const t = []; for (let v = Math.ceil(a / m) * m; v <= b + 1e-9; v += m) t.push(+v.toFixed(6)); return t; }
+
+function grafico(id, cfg) {
+  const fig = $(id), svg = fig.querySelector('svg'), tip = fig.querySelector('.tip');
+  let geo = null;
+  const draw = () => {
+    const W = svg.clientWidth, H = svg.clientHeight; if (!W || !H) return;
+    const c = cfg(); const small = W < 520;
+    const L = small ? 36 : 48, R = 12, T = 10, B = 28;
+    const sx = v => L + (v - c.x0) / (c.x1 - c.x0) * (W - L - R), sy = v => T + (1 - (v - c.y0) / (c.y1 - c.y0)) * (H - T - B);
+    let h = '';
+    for (const [a, b, e] of c.bandas || []) if (ETCOL[e]) h += `<rect x="${sx(a)}" y="${T}" width="${Math.max(1, sx(b) - sx(a))}" height="${H - T - B}" fill="${ETCOL[e]}" opacity="${estado.etapas.has(e) ? 0.9 : 0.25}"/>`;
+    for (const v of ticks(c.y0, c.y1, small ? 4 : 6)) h += `<line class="ax" x1="${L}" x2="${W - R}" y1="${sy(v)}" y2="${sy(v)}"/><text x="${L - 6}" y="${sy(v) + 4}" text-anchor="end">${f(v, v % 1 ? 1 : 0)}</text>`;
+    for (const v of ticks(c.x0, c.x1, small ? 4 : 8)) h += `<text x="${sx(v)}" y="${H - 8}" text-anchor="middle">${c.xfmt ? c.xfmt(v) : horaTxt(v)}</text>`;
+    for (const s of c.series) {
+      const pts = s.v.map((v, i) => `${sx(c.x[i]).toFixed(1)},${sy(v).toFixed(1)}`);
+      if (s.area && pts.length) h += `<path d="M${sx(c.x[0])},${sy(Math.max(c.y0, 0))}L${pts.join('L')}L${sx(c.x[c.x.length - 1])},${sy(Math.max(c.y0, 0))}Z" fill="${s.color}" opacity=".16"/>`;
+      if (s.puntos) h += s.v.map((v, i) => `<circle cx="${sx(c.x[i])}" cy="${sy(v)}" r="2.6" fill="${s.color}" opacity=".6"/>`).join('');
+      else if (pts.length) h += `<path d="M${pts.join('L')}" fill="none" stroke="${s.color}" stroke-width="${s.w || 2}" ${s.dash ? 'stroke-dasharray="5 4"' : ''} stroke-linejoin="round"/>`;
+    }
+    for (const p of c.diag || []) h += `<line x1="${sx(p[0])}" y1="${sy(p[0])}" x2="${sx(p[1])}" y2="${sy(p[1])}" stroke="var(--mute)" stroke-dasharray="4 4"/>`;
+    for (const p of c.marcas || []) h += `<circle cx="${sx(p[0])}" cy="${sy(p[1])}" r="5" fill="var(--diesel)" stroke="var(--card)" stroke-width="1.5"/>`;
+    h += `<line id="${id}-cur" x1="0" x2="0" y1="${T}" y2="${H - B}" stroke="var(--ink)" stroke-width="1" opacity="0"/>`;
+    svg.innerHTML = h; geo = {c, sx, L, R, W, H};
+  };
+  svg.addEventListener('pointermove', ev => {
+    if (!geo || !geo.c.tip) return;
+    const rect = svg.getBoundingClientRect(), x = ev.clientX - rect.left;
+    const {c, sx} = geo; if (!c.x.length) return;
+    let best = 0, dmin = Infinity; c.x.forEach((v, i) => { const d = Math.abs(sx(v) - x); if (d < dmin) { dmin = d; best = i; } });
+    const cur = $(id + '-cur'); cur.setAttribute('x1', sx(c.x[best])); cur.setAttribute('x2', sx(c.x[best])); cur.setAttribute('opacity', .5);
+    tip.innerHTML = c.tip(best); tip.hidden = false;
+    const tw = tip.offsetWidth, px = sx(c.x[best]);
+    tip.style.left = (px + 14 + tw > geo.W ? px - tw - 14 : px + 14) + 'px'; tip.style.top = '8px';
+  });
+  svg.addEventListener('pointerleave', () => { tip.hidden = true; const cur = $(id + '-cur'); if (cur) cur.setAttribute('opacity', 0); });
+  const ro = new ResizeObserver(draw); ro.observe(svg);
+  return draw;
+}
+
+let A = [], IDX = [];
+const fila = (k, v, col) => `<div><span>${col ? `<i class="sw" style="background:${col};margin-right:6px"></i>` : ''}${k}</span><b>${v}</b></div>`;
+const tipHora = p => `<b>${reloj(p.m)}</b> · hora ${f(p.t, 2)} · ${esc(ET[p.e])}`;
+
+const dibPot = grafico('f-pot', () => {
+  const ymin = estado.neta ? Math.min(0, ...A.map(p => p.pn)) : 0;
+  const ymax = Math.max(5, ...A.map(p => Math.max(p.ps, p.co, estado.neta ? p.pn : 0))) * 1.06;
+  const series = [{v: A.map(p => p.ps), color: 'var(--sun)', area: true}, {v: A.map(p => p.co), color: 'var(--cons)'}];
+  if (estado.neta) series.push({v: A.map(p => p.pn), color: 'var(--mute)', dash: true, w: 1.5});
+  return {x: A.map(p => p.t), x0: estado.desde, x1: estado.hasta, y0: ymin, y1: ymax, series, bandas: franjas(IDX),
+    marcas: A.filter(p => p.di > 0).map(p => [p.t, p.co]),
+    tip: i => { const p = A[i]; return tipHora(p) + fila('Potencia solar', f(p.ps) + ' kW', 'var(--sun)') + fila('Consumo', f(p.co) + ' kW', 'var(--cons)') + fila('Potencia neta', f(p.pn) + ' kW') + fila('Radiación', f(p.ra, 0) + ' W/m²') + fila('Temperatura', f(p.te) + ' °C') + (p.di > 0 ? fila('Diésel', f(p.di) + ' Wh', 'var(--diesel)') : ''); }};
+});
+const dibSoc = grafico('f-soc', () => {
+  const mn = Math.min(...A.map(p => p.so), 100);
+  return {x: A.map(p => p.t), x0: estado.desde, x1: estado.hasta, y0: Math.max(0, Math.floor(Math.min(mn, 98) - 1)), y1: 100.5,
+    series: [{v: A.map(p => p.so), color: 'var(--bat)'}], bandas: franjas(IDX), marcas: A.filter(p => p.di > 0).map(p => [p.t, p.so]),
+    tip: i => { const p = A[i]; return tipHora(p) + fila('Estado de carga', f(p.so) + ' %', 'var(--bat)') + fila('Energía en batería', f(p.so * D.meta.capacidad_wh / 100000) + ' kWh'); }};
+});
+const dibAgua = grafico('f-agua', () => ({x: A.map(p => p.t), x0: estado.desde, x1: estado.hasta, y0: 0,
+  y1: Math.max(1, ...A.map(p => p.agA)) * 1.08, series: [{v: A.map(p => p.agA), color: 'var(--agua)', w: 2.5}, {v: A.map(p => p.saA), color: 'var(--salm)', w: 2.5}],
+  bandas: franjas(IDX), tip: i => { const p = A[i]; return tipHora(p) + fila('Agua acumulada', f(p.agA, 2) + ' m³', 'var(--agua)') + fila('Salmuera acumulada', f(p.saA, 2) + ' m³', 'var(--salm)'); }}));
+const P = D.modelo.pred;
+const dibMod = grafico('f-mod', () => {
+  const pr = P[estado.mod];
+  return {x: P.real.map(v => v / 1000), x0: 0, x1: 58, y0: 0, y1: 58, xfmt: v => f(v, 0) + ' kW', diag: [[0, 56]],
+    series: [{v: pr.map(v => v / 1000), color: estado.mod === 'b' ? 'var(--cons)' : 'var(--sun)', puntos: true}],
+    tip: i => fila('Real', f(P.real[i] / 1000, 2) + ' kW') + fila('Predicha', f(pr[i] / 1000, 2) + ' kW') + fila('Error', f((pr[i] - P.real[i]) / 1000, 2) + ' kW')};
+});
+
+/* ---------- Render ---------- */
+function kpi(l, v, u, s, alerta) { return `<div class="kpi${alerta ? ' alerta' : ''}"><div class="l">${l}</div><div class="num">${v}<small>${u}</small></div><div class="s">${s}</div></div>`; }
+
+function actualizar() {
+  $('desde').value = estado.desde; $('hasta').value = estado.hasta;
+  $('o-desde').textContent = reloj(estado.desde * 60) + (estado.desde >= 24 ? ' (día 2)' : ''); $('o-hasta').textContent = reloj(estado.hasta * 60) + (estado.hasta > 24 ? ' (día 2)' : '');
+  document.querySelectorAll('#res button').forEach(b => b.setAttribute('aria-pressed', +b.dataset.r === estado.res));
+  document.querySelectorAll('#presets button').forEach(b => { const p = PRESETS[b.dataset.p]; b.setAttribute('aria-pressed', p[1] === estado.desde && p[2] === estado.hasta); });
+  document.querySelectorAll('#etapas input').forEach(c => c.checked = estado.etapas.has(+c.dataset.e));
+  $('neta').checked = estado.neta; $('leg-neta').hidden = !estado.neta;
+
+  IDX = rango(); A = agregar(IDX); const k = indicadores(IDX);
+  const pctExc = k.solar ? k.exc / k.solar * 100 : NaN;
+  $('kpis').innerHTML = [
+    kpi('Agua desalinizada', f(k.agua, 2), 'm³', `Salmuera ${f(k.salm, 2)} m³`),
+    kpi('Recuperación', f(k.agua + k.salm ? k.agua / (k.agua + k.salm) * 100 : NaN), '%', 'Agua / (agua + salmuera)'),
+    kpi('Energía solar generada', f(k.solar), 'kWh', `Pico ${f(k.pico / 1000)} kW`),
+    kpi('Excedente no aprovechado', f(k.exc), 'kWh', `${f(pctExc)} % de la energía solar`),
+    kpi('Aporte diésel', f(k.die), 'Wh', `${f(k.litros, 3)} L · ${k.eventos} aportes`, k.die > 0),
+    kpi('Fracción renovable', f(k.cons ? (k.cons - k.die / 1000) / k.cons * 100 : NaN, 2), '%', 'Demanda no cubierta: 0 Wh'),
+    kpi('Energía por m³', f(k.agua > 0.01 ? k.cons / k.agua : NaN, 2), 'kWh/m³', `Consumo ${f(k.cons)} kWh`),
+    kpi('Estado de carga mínimo', f(k.socI >= 0 ? k.socMin : NaN), '%', k.socI >= 0 ? `A las ${reloj(S.m[k.socI])} · ${f(k.oper)} h de operación` : 'Sin datos')
+  ].join('');
+  const todas = estado.etapas.size === 4;
+  $('scope').textContent = `Periodo: ${reloj(estado.desde * 60)} a ${reloj(estado.hasta * 60)} (${f(IDX.length / 60)} h, ${IDX.length.toLocaleString('es-CO')} registros)` +
+    (todas ? '' : ` · indicadores solo con las etapas marcadas (${k.sel.length.toLocaleString('es-CO')} registros)`) + '. Los indicadores usan los datos por minuto, sin importar la resolución elegida.';
+
+  const otros = k.solar - k.directa - k.carga - k.exc;
+  const partes = [['Uso directo en la planta', k.directa, 'var(--cons)'], ['Carga de la batería', k.carga, 'var(--bat)'], ['Excedente no aprovechado', k.exc, 'var(--line)']];
+  const tot = partes.reduce((s, p) => s + p[1], 0) || 1;
+  $('dest').innerHTML = partes.map(p => `<div title="${p[0]}" style="width:${p[1] / tot * 100}%;background:${p[2]}"></div>`).join('');
+  $('dest-rows').innerHTML = partes.map(p => `<div class="r"><span><i class="sw" style="background:${p[2]};margin-right:8px"></i>${p[0]}</span><span class="v">${f(p[1])} kWh · ${f(k.solar ? p[1] / k.solar * 100 : NaN, 0)} %</span></div>`).join('') +
+    `<p class="mute small">Diferencia de balance: ${otros > 0 ? '+' : ''}${f(otros, 1)} kWh; el excedente reportado es algo mayor que el calculado (ver verificación A25).</p>`;
+
+  const porEt = ET.map((e, j) => { const ii = IDX.filter(i => S.e[i] === j); return {e, j, min: ii.length, cons: suma(ii, 'co') / 60000, exc: suma(ii, 'ex') / 1000}; }).filter(r => r.min);
+  const maxE = Math.max(1, ...porEt.map(r => Math.max(r.cons, r.exc)));
+  $('etapa-rows').innerHTML = porEt.map(r => `<div><div class="r" style="border:0;padding:0"><span><i class="sw" style="background:${ETCOL[r.j] || 'var(--line)'};margin-right:8px"></i>${esc(r.j === 3 ? 'Transición (ambas)' : r.e)} · ${r.min < 60 ? r.min + ' min' : f(r.min / 60) + ' h'}</span><span class="v">${f(r.cons)} kWh consumo · ${f(r.exc)} kWh excedente</span></div>
+    <div class="bar"><i style="width:${r.cons / maxE * 100}%;background:var(--cons)"></i></div><div class="bar" style="margin-top:3px"><i style="width:${r.exc / maxE * 100}%;background:var(--sun);opacity:.7"></i></div></div>`).join('') +
+    '<p class="mute small">Barra azul: consumo. Barra dorada: excedente solar no aprovechado.</p>';
+  const ra = IDX.map(i => S.ra[i]), te = IDX.map(i => S.te[i]), vi = IDX.map(i => S.vi[i]);
+  $('clima').textContent = IDX.length ? `radiación máxima ${f(Math.max(...ra), 0)} W/m², temperatura ${f(Math.min(...te))} a ${f(Math.max(...te))} °C, viento promedio ${f(vi.reduce((a, b) => a + b, 0) / vi.length)} m/s.` : 'sin datos.';
+
+  const ev = IDX.filter(i => S.di[i] > 0);
+  $('t-diesel').tBodies[0].innerHTML = ev.length ? ev.map(i => `<tr><td>${reloj(S.m[i])}</td><td class="n">${f(S.so[i])} %</td><td class="n">${f(-S.pn[i] - 8000, 0)} W</td><td class="n">${f(S.di[i])} Wh</td></tr>`).join('')
+    : '<tr><td colspan="4" class="mute">Sin aportes diésel en el periodo seleccionado.</td></tr>';
+
+  const lg = k.lg, lf = k.lf, mx = Math.max(1, lg, lf);
+  $('lodos').innerHTML = [['Lodos gruesos', lg, 'var(--salm)'], ['Lodos finos', lf, 'var(--mute)']].map(([n, v, c]) => `<div><div class="r" style="border:0;padding:0"><span>${n}</span><span class="v">${f(v, 0)} paquetes · ${f(v * 10, 0)} kg</span></div><div class="bar"><i style="width:${v / mx * 100}%;background:${c}"></i></div></div>`).join('') +
+    `<div class="r" style="margin-top:8px"><span>Total</span><span class="v"><b>${f((lg + lf) * 10 / 1000, 2)} t</b></span></div><p class="mute small">En todo el escenario: unos ${f(D.kpis.lodos_kg_por_m3_captado, 0)} kg por m³ captado (${f(D.kpis.agua_captada_m3, 0)} m³ en 2 ciclos). Es un valor alto que conviene contrastar con datos reales.</p>`;
+
+  dibPot(); dibSoc(); dibAgua();
+}
+
+function pintarAuditoria() {
+  const a = D.auditoria, c = r => a.filter(x => x.resultado === r).length;
+  $('aud-res').textContent = `${a.length} verificaciones · ${c('OK')} OK · ${c('Corregido')} corregidas · ${c('Advertencia')} advertencias`;
+  document.querySelectorAll('#aud-f button').forEach(b => b.setAttribute('aria-pressed', b.dataset.a === estado.aud));
+  $('t-aud').tBodies[0].innerHTML = a.filter(x => estado.aud === 'Todos' || x.resultado === estado.aud).map(x =>
+    `<tr><td>${esc(x.id)}</td><td>${esc(x.categoria)}</td><td>${esc(x.verificacion)}</td><td><span class="st ${esc(x.resultado)}">${esc(x.resultado)}</span></td><td class="n">${Number(x.registros_afectados).toLocaleString('es-CO')}</td><td>${esc(x.decision)}</td></tr>`).join('');
+}
+
+function pintarModelo() {
+  document.querySelectorAll('#mod-v button').forEach(b => b.setAttribute('aria-pressed', b.dataset.v === estado.mod));
+  $('t-mod').tBodies[0].innerHTML = D.modelo.metricas.map(r => `<tr><td>${esc(r.modelo === 'Regresión lineal' ? r.version : r.modelo)}</td><td>${esc(r.validacion)}</td><td class="n">${f(r.MAE_W / 1000, 2)} kW</td><td class="n">${f(r.RMSE_W / 1000, 2)} kW</td><td class="n">${f(r.R2, 3)}</td></tr>`).join('');
+  const R = D.modelo.resumen;
+  $('mod-txt').textContent = `Al alinear la radiación con el minuto anterior (hallazgo A21 de la auditoría), el error medio baja de 1,68 kW a 0,23 kW, menos del 1 % de la potencia media en horas de sol. Coeficientes del modelo B: ${f(R.coef_radiacion_w_por_w_m2, 2)} W por cada W/m² de radiación y ${f(R.coef_temperatura_w_por_c, 1)} W por cada °C (a más temperatura, algo menos de potencia, lo esperable en paneles solares).`;
+  dibMod();
+}
+
+const K = D.kpis;
+const HALL = [
+  ['Se desaprovecha más de la mitad de la energía solar',
+   `De ${f(K.solar_kwh)} kWh generados, la planta usó ${f(K.consumo_kwh)} kWh y ${f(K.excedente_kwh)} kWh (${f(K.excedente_pct)} %) quedaron como excedente. 137 kWh de ese excedente (59 %) aparecen entre 11:00 y 14:00, cuando solo opera el pretratamiento (3,2 kW) con unos 49 kW de sol disponibles.`,
+   'El excedente coincide con el horario de las etapas. Probar en la simulación la ósmosis en las horas de más sol permitiría verificar si se aprovecha mejor; estos datos solos no lo prueban.'],
+  ['El diésel entra por un límite de potencia, no por falta de energía',
+   `Hubo ${K.diesel_eventos} aportes diésel entre 16:16 y 16:30 (${f(K.diesel_kwh * 1000, 0)} Wh, ${f(K.combustible_l, 3)} L) con la batería entre 93 % y 97 %. Cada aporte coincide exactamente con el déficit que supera ${f(K.bateria_descarga_max_kw)} kW.`,
+   'La batería de 48 kWh casi no se usa (mínimo 92,4 %). El límite que pesa es su potencia de descarga, inferida de los datos, no su capacidad.'],
+  ['Agua con 70 % de recuperación y 3,6 kWh por m³',
+   `Se produjeron ${f(K.agua_m3, 2)} m³ de agua y ${f(K.salmuera_m3, 2)} m³ de salmuera a partir de ${f(K.agua_captada_m3, 0)} m³ captados. La ósmosis inversa concentra el 88 % del consumo en solo 5 h, y la planta opera ${f(K.horas_operacion)} de las 30 h (${f(K.utilizacion_pct)} %).`,
+   `El consumo específico (${f(K.kwh_por_m3, 2)} kWh/m³; ${f(K.kwh_por_m3_osmosis, 2)} solo la ósmosis) sirve como referencia para comparar otros escenarios.`],
+  ['Los datos son completos, pero necesitan correcciones',
+   `Sin nulos, sin saltos y sin claves duplicadas. Se corrigieron 5 problemas: estado de carga en 0 % al inicio, unidad W en vez de Wh, desfase de 1 minuto entre radiación y potencia, ruido de redondeo y un encabezado con espacio.`,
+   'Antes de analizar o modelar conviene usar la hoja de minutos como base (las demás son copias muestreadas) y alinear radiación y potencia. Los cambios de etapa merecen revisión en el modelo de simulación.']
+];
+$('hall').innerHTML = HALL.map(h => `<div class="panel"><h3>${h[0]}</h3><span class="tag">Lo que muestran los datos</span><p>${h[1]}</p><span class="tag">Lectura</span><p>${h[2]}</p></div>`).join('');
+$('fuente').textContent = D.meta.fuente; $('gen').textContent = D.meta.generado;
+
+actualizar(); pintarAuditoria(); pintarModelo();
+}
+</script>
+</body>
+</html>

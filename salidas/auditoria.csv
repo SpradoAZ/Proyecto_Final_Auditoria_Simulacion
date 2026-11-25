@@ -1,0 +1,27 @@
+id,categoria,verificacion,resultado,registros_afectados,decision
+A01,Estructura,Columnas esperadas (18) presentes en la hoja Minutos,OK,0,Se renombran a formato snake_case con la unidad en el nombre.
+A02,Formato,Encabezados con espacios sobrantes,Corregido,1,Se eliminó el espacio final en: 'Velocidad del viento (m/s) '.
+A03,Completitud,Valores nulos en todas las columnas,OK,0,No hay nulos; no se requiere imputación.
+A04,Tipos,Todas las columnas son numéricas,OK,0,Tipos correctos (entero y decimal).
+A05,Continuidad,Minutos consecutivos de 1 a 1.800 sin saltos,OK,0,Serie temporal completa (30 horas).
+A06,Duplicados,Minutos repetidos (clave duplicada),OK,0,No hay claves duplicadas.
+A07,Duplicados,Filas con valores idénticos a otra fila (sin contar el minuto),Advertencia,509,"Se conservan: son estados reales repetidos (planta detenida de noche) en minutos distintos, no registros duplicados."
+A08,Consistencia entre hojas,La hoja Cada5min coincide con la hoja Minutos en los mismos instantes,OK,0,Es una muestra del último minuto de cada intervalo (no un promedio). Se usa la hoja Minutos como base única; las otras resoluciones se recalculan agregando.
+A09,Consistencia entre hojas,La hoja Cada10min coincide con la hoja Minutos en los mismos instantes,OK,0,Es una muestra del último minuto de cada intervalo (no un promedio). Se usa la hoja Minutos como base única; las otras resoluciones se recalculan agregando.
+A10,Consistencia entre hojas,La hoja Horas coincide con la hoja Minutos en los mismos instantes,OK,0,Es una muestra del último minuto de cada intervalo (no un promedio). Se usa la hoja Minutos como base única; las otras resoluciones se recalculan agregando.
+A11,Unidades,Unidad de 'Energía almacenada' declarada como W,Corregido,1800,"Es energía, no potencia: se renombra a energia_bateria_wh (Wh)."
+A12,Rangos,Capacidad de batería inferida = 48.000 Wh (máximo observado),OK,0,Se usa para validar el estado de carga.
+A13,Rangos,"Variables físicas no negativas (caudal, radiación, viento, potencias, energía)",OK,0,Sin negativos. La potencia neta sí puede ser negativa (la planta consume más de lo que genera).
+A14,Rangos,Estado de carga entre 0 % y 100 %,OK,0,Dentro de rango.
+A15,Variabilidad,Columnas sin variación,Advertencia,2,"Constantes: caudal_m3_h, demanda_no_cubierta_acum_wh. El caudal (11,67 m³/h) es un parámetro de la simulación y la demanda no cubierta vale 0 en todo el periodo (resultado relevante). Se conservan, pero no aportan en correlaciones ni en el modelo."
+A16,Inconsistencia,Estado de carga coherente con la energía almacenada (SOC = energía / capacidad),Corregido,6,"Minutos 1, 2, 3, 4, 5, 6: SOC = 0 % con la batería llena (error de arranque de la simulación). Se recalcula SOC = energía / capacidad × 100."
+A17,Inconsistencia,Potencia neta = potencia solar − consumo,Advertencia,4,"Falla en los minutos 660, 661, 840, 841, justo en cambios de etapa: el consumo cambia 2 minutos antes que la potencia neta. El pico de 31,6 kW (ambas etapas a la vez) aparece solo en el consumo, por lo que se trata como posible efecto de transición. No se puede saber qué columna es la correcta: se conservan los valores y se marcan (columna inconsistencia_neta)."
+A18,Inconsistencia,Columnas acumuladas nunca disminuyen,OK,0,Todas las acumuladas son no decrecientes.
+A19,Formato,"Ruido de punto flotante (mismo valor escrito distinto, p. ej. 3160,4999 y 3160,5)",Corregido,2,"Consumo pasó de 6 a 4 niveles distintos tras redondear a precisión física razonable (0,1 W; 0,0001 m³)."
+A20,Resolución,Frecuencia real de actualización de las variables,Advertencia,911,Clima y energía cambian cada 2 minutos y se repiten en el minuto siguiente. La resolución efectiva es de 2 minutos; se documenta y no se modifica.
+A21,Desfase temporal,La potencia solar responde a la radiación del minuto anterior,Corregido,716,"Radiación cambia en minutos impares y potencia en pares. Correlación sin alinear r = 0,9852; alineando 1 minuto r = 0,9998. Se agrega la columna radiacion_alineada_w_m2 y se conserva la original."
+A22,Atípicos,"Relación potencia solar / radiación (regla IQR × 1,5)",Advertencia,141,"141 atípicos con los datos originales; 0 tras alinear el desfase. Se marcan (columna atipico_ratio_original) y no se eliminan: su causa es el desfase, no un error de medición."
+A23,Atípicos,"Valores extremos en temperatura_c (regla IQR × 1,5)",OK,0,"Rango 24,00 a 37,96: sin valores físicamente imposibles; se conservan."
+A24,Atípicos,"Valores extremos en viento_m_s (regla IQR × 1,5)",OK,0,"Rango 6,00 a 8,91: sin valores físicamente imposibles; se conservan."
+A25,Balance energético,Excedente reportado frente a balance (solar − consumo − Δbatería + diésel),Advertencia,0,"Reportado 234,0 kWh; balance 232,9 kWh; diferencia 0,45 %. Diferencia menor, atribuible al paso de 2 minutos del modelo; se documenta."
+A26,Variables derivadas,Etapa de la planta según el nivel de consumo,OK,1800,Parada: 1138 min; Pretratamiento: 360 min; Ósmosis inversa: 300 min; Pretratamiento + ósmosis: 2 min. Supuesto: el minuto 0 corresponde a las 00:00 (el sol sale 06:03 y se pone 18:00).
